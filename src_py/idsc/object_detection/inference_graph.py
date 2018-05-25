@@ -18,7 +18,7 @@ ARCH_DICT = {1: "ssd_mobilenet_v1_coco_11_06_2017",
              4: "faster_rcnn_resnet101_coco_11_06_2017",
              5: "faster_rcnn_inception_resnet_v2_atrous_coco_11_06_2017"
              }
-ROOT_DIR = "crossmodal_tl/"
+ROOT_DIR = "retina/"
 NETS_CKPT_DIR = "resources/nets_ckpt/"
 LABELS_DIR = "resources/labels/"
 
@@ -27,7 +27,8 @@ LABELS_DIR = "resources/labels/"
 
 
 class DetectionGraph:
-    def __init__(self, arch,
+    def __init__(self,
+                 arch,
                  download_base='http://download.tensorflow.org/models/object_detection/',
                  labels='mscoco_label_map.json',
                  retrival_thresh=.5):
@@ -46,8 +47,8 @@ class DetectionGraph:
         # Path to frozen detection graph.
         # This is the actual model that is used for the object detection.
         self._path_to_ckpt_dir = os.path.join(self._path_to_root, NETS_CKPT_DIR)
-        self._path_to_ckpt = os.path.join(self._path_to_ckpt_dir,
-                                          self._model_name + '/frozen_inference_graph.pb')
+        self._path_to_ckpt = os.path.join(
+                self._path_to_ckpt_dir, self._model_name + '/frozen_inference_graph.pb')
         self._labels_file = labels
         self._maybe_download()
         self._detection_graph, self._labels_dict = self._load_graph()
@@ -167,14 +168,14 @@ class DetectionGraph:
             objdetected.boxes = objdetected.boxes[idx_to_keep]
         return objdetected
 
-    def run_inference_on_img(self, image_in, source='detect_from_rgb'):
+    def run_inference_on_img(self, image_in):
         """
         :param image_in:
         :param source:
         :return ObjectDetected: boxes are Nx4 [y_min, x_min, y_max, x_max]
         """
-        assert image_in.shape[2] == 3
-        image_np_expanded = np.expand_dims(image_in, axis=0)
+        assert image_in.shape[2] == 3  # fixme temp
+        image_np_expanded = np.expand_dims(image_in, axis=0)  # fixme temp
         # Actual detection.
         (boxes, scores, classes, _) = self._sess.run(
                 [self._detection_boxes,
@@ -183,40 +184,9 @@ class DetectionGraph:
                  self._num_detections],
                 feed_dict={self._image_tensor: image_np_expanded})
         # filter according to retrieval thresh
+        # fixme temp maybe we don't do it here
         boxes, scores, classes = self._retrival_threshold_cutoff(boxes, scores, classes)
-        # fixme objdetected does not exists here
-        return ObjectDetected(source=source,
-                              boxes=boxes,
-                              scores=scores,
-                              classes=classes,
-                              ts=0)
-
-    # def visualize_rgb_detections(self, img, obj_detected, labels):
-    #     """ Visualization of the results of a detection.
-    #     :param img:
-    #     :param obj_detected:
-    #     :type obj_detected: ObjectDetected
-    #     :return:
-    #     """
-    #     img_copy = np.copy(img)
-    #     if labels is None:
-    #         labels = self._labels_dict
-    #     # width = img_copy.shape[1]
-    #     # if img_copy.shape[0] > width:
-    #     #     ratio = img_copy.shape[1] / img_copy.shape[0]
-    #     #     img_copy = cv2.resize(img_copy, (int(width * ratio), width))
-    #     vis_util.visualize_boxes_and_labels_on_image_array(
-    #             img_copy,
-    #             obj_detected.boxes,
-    #             obj_detected.classes.astype(np.int32),
-    #             obj_detected.scores,
-    #             labels,
-    #             use_normalized_coordinates=True,
-    #             line_thickness=1)
-    #
-    #     # cv2.imshow('Enhanced image with labels', img_copy)
-    #     # cv2.waitKey(1000)
-    #     return img_copy
+        return boxes, scores, classes
 
 
 if __name__ == '__main__':

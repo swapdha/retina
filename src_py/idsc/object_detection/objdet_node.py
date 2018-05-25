@@ -1,7 +1,7 @@
 """
 author: az
 """
-import objdet_node
+import objdet
 import sys
 import rospy
 
@@ -10,7 +10,7 @@ def main(args):
     """Initializes and cleanup ros node"""
     rospy.init_node('Object_detection_node', anonymous=True)
     try:
-        node = objdet_node.Zauron()
+        node = objdet.Zauron()
         rospy.spin()
     except rospy.ROSInterruptException:
         print("Shutting down ROS")
