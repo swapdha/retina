@@ -2,6 +2,8 @@
 author: az
 """
 import rospy
+import lcm
+from exlcm import example_t
 from cv_bridge import CvBridge, CvBridgeError
 from inference_graph import DetectionGraph
 from sensor_msgs.msg import CameraInfo
@@ -21,9 +23,11 @@ class ObjectDetectorRgb:
         """Initialize ros publisher, ros subscriber"""
         # Private "buffers"
         self._pylon_last_image = None
+        self._boxes, self._scores, self._classes = None, None, None
+        # Interfaces
         self._cvbridge = CvBridge()
         self._detector = DetectionGraph(arch=2)
-        self._boxes, self._scores, self._classes = None, None, None
+        self._lcm = lcm.Lcm()
         # Subscribers
         self.pylon_info_sub = rospy.Subscriber(
                 camera_info_topic, CameraInfo,
@@ -48,4 +52,5 @@ class ObjectDetectorRgb:
             print(e)
 
     def broadcast_to_lcm(self):
-        pass
+        msg = example_t(self._boxes, self._scores, self._classes)
+        self._lcm.publish("/camera/obj_detected", msg.encode())
