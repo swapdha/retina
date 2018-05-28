@@ -23,6 +23,7 @@ import ch.ethz.idsc.gokart.core.pos.GokartPoseLcmModule;
 import ch.ethz.idsc.gokart.core.pure.FigureDucttapeModule;
 import ch.ethz.idsc.gokart.core.pure.FigureEightModule;
 import ch.ethz.idsc.gokart.core.pure.FigureOvalModule;
+import ch.ethz.idsc.gokart.core.pure.GokartParkingModule;
 import ch.ethz.idsc.gokart.core.pure.GokartTrajectoryModule;
 import ch.ethz.idsc.gokart.core.slam.LidarLocalizationModule;
 import ch.ethz.idsc.gokart.gui.lab.AutoboxCompactModule;
@@ -76,7 +77,8 @@ enum RunTabbedTaskGui {
       FigureEightModule.class, //
       FigureOvalModule.class, //
       FigureDucttapeModule.class, //
-      GokartTrajectoryModule.class //
+      GokartTrajectoryModule.class, //
+      GokartParkingModule.class
   );
   static final List<Class<?>> MODULES_FUSE = Arrays.asList( //
       SteerBatteryWatchdog.class, //

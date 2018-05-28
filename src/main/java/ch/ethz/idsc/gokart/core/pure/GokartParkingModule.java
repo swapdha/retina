@@ -43,7 +43,9 @@ import ch.ethz.idsc.owl.glc.std.StandardTrajectoryPlanner;
 import ch.ethz.idsc.owl.math.StateTimeTensorFunction;
 import ch.ethz.idsc.owl.math.flow.Flow;
 import ch.ethz.idsc.owl.math.region.ImageRegion;
+import ch.ethz.idsc.owl.math.region.PolygonRegion;
 import ch.ethz.idsc.owl.math.region.Region;
+import ch.ethz.idsc.owl.math.region.RegionUnion;
 import ch.ethz.idsc.owl.math.state.FixedStateIntegrator;
 import ch.ethz.idsc.owl.math.state.StateTime;
 import ch.ethz.idsc.owl.math.state.TrajectorySample;
@@ -73,6 +75,7 @@ public class GokartParkingModule extends AbstractModule implements GokartPoseLis
   private static final FixedStateIntegrator FIXEDSTATEINTEGRATOR = // node interval == 2/5
       FixedStateIntegrator.create(Se2CarIntegrator.INSTANCE, RationalScalar.of(2, 10), 4);
   private static final Se2Wrap SE2WRAP = new Se2Wrap(Tensors.vector(1, 1, 1));
+  private static final Tensor VIRTUAL = Tensors.fromString("{{30.6, 38.3}, {34.3, 41.7}, {34.5, 41.2}, {30.8, 37.7}}");
   // ---
   final FlowsInterface carFlows = CarFlows.forward( //
       SPEED, Magnitude.PER_METER.apply(TrajectoryConfig.GLOBAL.maxRotation));
@@ -106,10 +109,12 @@ public class GokartParkingModule extends AbstractModule implements GokartPoseLis
     final Scalar goalRadius_xy = SQRT2.divide(PARTITIONSCALE.Get(0));
     final Scalar goalRadius_theta = SQRT2.divide(PARTITIONSCALE.Get(2));
     goalRadius = Tensors.of(goalRadius_xy, goalRadius_xy, goalRadius_theta);
-    plannerConstraint = RegionConstraints.timeInvariant(fixedRegion);
+    Region<Tensor> polyRegion = PolygonRegion.of(VIRTUAL);
+    Region<Tensor> unionRegion = RegionUnion.wrap(Arrays.asList(fixedRegion, polyRegion));
+    plannerConstraint = RegionConstraints.timeInvariant(unionRegion);
   }
 
-  @Override // from AbstractClockedModule
+  @Override // from AbstractModule
   protected void first() throws Exception {
     gokartPoseLcmClient.addListener(this);
     // ---
@@ -143,7 +148,7 @@ public class GokartParkingModule extends AbstractModule implements GokartPoseLis
     return;
   }
 
-  @Override // from AbstractClockedModule
+  @Override // from AbstractModule
   protected void last() {
     purePursuitModule.terminate();
     gokartPoseLcmClient.stopSubscriptions();
