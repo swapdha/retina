@@ -75,7 +75,7 @@ public class GokartParkingModule extends AbstractModule implements GokartPoseLis
   private static final FixedStateIntegrator FIXEDSTATEINTEGRATOR = // node interval == 2/5
       FixedStateIntegrator.create(Se2CarIntegrator.INSTANCE, RationalScalar.of(2, 10), 4);
   private static final Se2Wrap SE2WRAP = new Se2Wrap(Tensors.vector(1, 1, 1));
-  private static final Tensor VIRTUAL = Tensors.fromString("{{30.6, 38.3}, {34.3, 41.7}, {34.5, 41.2}, {30.8, 37.7}}");
+  private static final Tensor VIRTUAL = Tensors.fromString("{{30.6, 38.3}, {35.3, 42.7}, {35.5, 42.2}, {30.8, 37.7}}");
   // ---
   final FlowsInterface carFlows = CarFlows.forward( //
       SPEED, Magnitude.PER_METER.apply(TrajectoryConfig.GLOBAL.maxRotation));
