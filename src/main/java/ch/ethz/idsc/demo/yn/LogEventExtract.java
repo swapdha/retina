@@ -15,12 +15,11 @@ import lcm.logging.LogEventWriter;
 enum LogEventExtract {
   ;
   public static void main(String[] args) throws Exception {
-    File src = new File("/media/datahaki/media/ethz/gokartlogs", "20180112T113153_9e1d3699.lcm.00");
-    src = UserHome.file("temp/20180108T165210_manual.lcm");
-    src = UserHome.file("gokartlogs/20180418/20180418T132333_bca165ae.lcm.00");
-    src = YnLogFileLocator.file(GokartLogFile._20180503T160522_16144bb6);
+    String logname = "20180912T180011_c2615078.lcm.00";
+    File src = UserHome.file("/gokart/logs/" + logname);
+    // src = YnLogFileLocator.file(GokartLogFile._20180503T160522_16144bb6);
     File dst = null;
-    dst = UserHome.file("20180503T160522_short.lcm");
+    dst = UserHome.file("/gokart/logs/" + logname + "_short");
     if (dst.exists()) {
       System.out.println("deleting: " + dst);
       dst.delete();
