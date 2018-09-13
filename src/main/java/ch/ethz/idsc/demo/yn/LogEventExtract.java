@@ -15,7 +15,7 @@ import lcm.logging.LogEventWriter;
 enum LogEventExtract {
   ;
   public static void main(String[] args) throws Exception {
-    String logname = "20180912T180011_c2615078.lcm.00";
+    String logname = "20180913T160707_b0c36115.lcm.00";
     File src = UserHome.file("/gokart/logs/" + logname);
     // src = YnLogFileLocator.file(GokartLogFile._20180503T160522_16144bb6);
     File dst = null;
@@ -24,8 +24,8 @@ enum LogEventExtract {
       System.out.println("deleting: " + dst);
       dst.delete();
     }
-    int lo = 800000;
-    int hi = 1460955;
+    int lo = 3000000;
+    int hi = 3242000;
     // ---
     Log log = new Log(src.toString(), "r");
     LogEventWriter logWriter = new LogEventWriter(dst);

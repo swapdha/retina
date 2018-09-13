@@ -13,7 +13,7 @@ enum GokartLcmLogPlayer {
   ;
   public static void main(String[] args) throws IOException {
     LogPlayerConfig cfg = new LogPlayerConfig();
-    String logname = "20180912T180011_c2615078.lcm.00";
+    String logname = "20180913T160707_b0c36115.lcm.00";
     File src = UserHome.file("/gokart/logs/" + logname);
     //src = YnLogFileLocator.file(GokartLogFile._20180503T160522_16144bb6);
     cfg.logFile = src.toString();
