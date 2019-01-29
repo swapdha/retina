@@ -3,29 +3,35 @@ package ch.ethz.idsc.gokart.core.mpc;
 
 import java.nio.ByteBuffer;
 
-/* package */ class ControlAndPredictionStep implements MPCNativeInsertable {
-  public final ControlAndPredictionStep[] controlAndPredictionSteps;
+public class ControlAndPredictionStep implements MPCNativeInsertable {
+  // not used:
+  // private static final Unit SCE_PER_SECOND = SteerPutEvent.UNIT_ENCODER.add(SI.PER_SECOND);
+  public final GokartState state;
+  public final GokartControl control;
 
-  public ControlAndPredictionStep(ControlAndPredictionStep[] controlAndPredictionSteps) {
-    this.controlAndPredictionSteps = controlAndPredictionSteps;
+  public ControlAndPredictionStep(GokartControl control, GokartState state) {
+    this.control = control;
+    this.state = state;
   }
 
   public ControlAndPredictionStep(ByteBuffer byteBuffer) {
-    controlAndPredictionSteps = new ControlAndPredictionStep[MPCNative.PREDICTIONSIZE];
-    for (int i = 0; i < MPCNative.PREDICTIONSIZE; i++) {
-      controlAndPredictionSteps[i] = new ControlAndPredictionStep(byteBuffer);
-    }
+    control = new GokartControl(byteBuffer);
+    state = new GokartState(byteBuffer);
   }
 
   @Override
   public void insert(ByteBuffer byteBuffer) {
-    for (ControlAndPredictionStep step : controlAndPredictionSteps) {
-      step.insert(byteBuffer);
-    }
+    control.insert(byteBuffer);
+    state.insert(byteBuffer);
   }
 
   @Override
   public int length() {
-    return controlAndPredictionSteps[0].length() * controlAndPredictionSteps.length;
+    return control.length() + state.length();
+  }
+
+  @Override
+  public String toString() {
+    return "cns:\n" + control.toString() + state.toString();
   }
 }

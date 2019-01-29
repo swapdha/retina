@@ -8,20 +8,20 @@ import java.nio.ByteBuffer;
 import ch.ethz.idsc.gokart.core.pos.GokartPoseEvent;
 import ch.ethz.idsc.gokart.core.pos.GokartPoseHelper;
 import ch.ethz.idsc.gokart.gui.GokartLcmChannel;
+import ch.ethz.idsc.gokart.lcm.OfflineLogPlayer;
 import ch.ethz.idsc.gokart.offline.api.OfflineTableSupplier;
-import ch.ethz.idsc.owl.data.Stopwatch;
-import ch.ethz.idsc.owl.subdiv.curve.GeodesicCenter;
-import ch.ethz.idsc.owl.subdiv.curve.GeodesicCenterFilter;
-import ch.ethz.idsc.owl.subdiv.curve.Se2Geodesic;
-import ch.ethz.idsc.retina.lcm.OfflineLogPlayer;
 import ch.ethz.idsc.retina.util.math.Magnitude;
+import ch.ethz.idsc.sophus.filter.GeodesicCenter;
+import ch.ethz.idsc.sophus.filter.GeodesicCenterFilter;
+import ch.ethz.idsc.sophus.group.Se2Geodesic;
+import ch.ethz.idsc.sophus.math.SmoothingKernel;
 import ch.ethz.idsc.tensor.Scalar;
 import ch.ethz.idsc.tensor.Tensor;
 import ch.ethz.idsc.tensor.io.CsvFormat;
 import ch.ethz.idsc.tensor.io.Export;
 import ch.ethz.idsc.tensor.io.TableBuilder;
+import ch.ethz.idsc.tensor.io.Timing;
 import ch.ethz.idsc.tensor.opt.TensorUnaryOperator;
-import ch.ethz.idsc.tensor.sig.WindowFunctions;
 
 public class PoseFilteringTable implements OfflineTableSupplier {
   private final TableBuilder tableBuilder = new TableBuilder();
@@ -59,11 +59,11 @@ public class PoseFilteringTable implements OfflineTableSupplier {
         davisImuTable.getTable().map(CsvFormat.strict()));
     Tensor table = poseFiltering.getTable().copy();
     Tensor pose = Tensor.of(table.stream().map(r -> r.extract(1, 4)));
-    Stopwatch stopwatch = Stopwatch.started();
+    Timing timing = Timing.started();
     TensorUnaryOperator geodesicMeanFilter = //
-        GeodesicCenterFilter.of(GeodesicCenter.of(Se2Geodesic.INSTANCE, WindowFunctions.GAUSSIAN), 7);
+        GeodesicCenterFilter.of(GeodesicCenter.of(Se2Geodesic.INSTANCE, SmoothingKernel.GAUSSIAN), 7);
     pose = geodesicMeanFilter.apply(pose);
-    System.out.println("filter=" + stopwatch.display_seconds());
+    System.out.println("filter=" + timing.seconds());
     table.set(pose.get(Tensor.ALL, 0), Tensor.ALL, 1);
     table.set(pose.get(Tensor.ALL, 1), Tensor.ALL, 2);
     table.set(pose.get(Tensor.ALL, 2), Tensor.ALL, 3);

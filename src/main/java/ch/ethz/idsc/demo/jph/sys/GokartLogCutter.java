@@ -10,20 +10,14 @@ import ch.ethz.idsc.gokart.offline.gui.GokartLogFileIndexer;
 
 enum GokartLogCutter {
   ;
-  /** azure:
-   * _20180827T150209_db899976
-   * _20180827T170643_db899976
-   * _20180827T175941_db899976
-   * _20180830T101537_db899976
-   * _20180830T111749_db899976 */
   public static void main(String[] args) throws IOException {
-    GokartLogFile gokartLogFile = GokartLogFile._20180503T160522_16144bb6;
+    GokartLogFile gokartLogFile = GokartLogFile._20181211T155230_f8690659;
     File file = DatahakiLogFileLocator.file(gokartLogFile);
-    file = new File("/media/datahaki/media/ethz/gokart/topic/mapping/20180924T104243_1/log.lcm");
+    // file = new File("/media/datahaki/media/ethz/gokart/topic/mapping/20180924T104243_1/log.lcm");
     GokartLogFileIndexer gokartLogFileIndexer = GokartLogFileIndexer.create(file);
     new GokartLcmLogCutter( //
         gokartLogFileIndexer, //
-        new File("/media/datahaki/media/ethz/gokart/topic/pedestrian"), //
+        new File("/media/datahaki/media/ethz/gokart/topic/localization"), //
         gokartLogFile.getTitle());
   }
 }

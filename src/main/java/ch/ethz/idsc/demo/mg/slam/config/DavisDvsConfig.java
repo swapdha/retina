@@ -3,7 +3,7 @@ package ch.ethz.idsc.demo.mg.slam.config;
 
 import ch.ethz.idsc.demo.mg.LogFileLocations;
 import ch.ethz.idsc.gokart.gui.GokartLcmChannel;
-import ch.ethz.idsc.retina.lcm.davis.DavisLcmClient;
+import ch.ethz.idsc.gokart.lcm.davis.DavisLcmClient;
 import ch.ethz.idsc.retina.util.math.NonSI;
 import ch.ethz.idsc.retina.util.math.SI;
 import ch.ethz.idsc.tensor.RealScalar;
@@ -13,13 +13,13 @@ import ch.ethz.idsc.tensor.qty.Quantity;
 /* package */ class DavisDvsConfig extends DvsConfig {
   public DavisDvsConfig() {
     /** must match name in LogFileLocations and be an extract of a recording with the davis */
-    logFileLocations = LogFileLocations.DUBI19a;
+    logFileLocations = LogFileLocations.DUBI20a;
     width = RealScalar.of(240);
     height = RealScalar.of(180);
     dvsLcmClient = new DavisLcmClient(GokartLcmChannel.DAVIS_OVERVIEW);
     channel_DVS = "davis240c.overview.dvs";
     /** maxDuration */
-    logFileDuration = Quantity.of(30, SI.SECOND);
+    logFileDuration = Quantity.of(55, SI.SECOND);
     // general parameters
     /** time threshold for background activity filter
      * the report 20180225_davis240c_event_distribution concludes:

@@ -2,12 +2,14 @@
 package ch.ethz.idsc.gokart.gui;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
 
-import ch.ethz.idsc.retina.sys.AbstractModule;
-import ch.ethz.idsc.retina.sys.AppCustomization;
-import ch.ethz.idsc.retina.util.gui.WindowConfiguration;
+import ch.ethz.idsc.retina.util.sys.AbstractModule;
+import ch.ethz.idsc.retina.util.sys.AppCustomization;
+import ch.ethz.idsc.retina.util.sys.GuiConfig;
+import ch.ethz.idsc.retina.util.sys.WindowConfiguration;
 import ch.ethz.idsc.tensor.io.TensorProperties;
 
 /** ParametersModule is a graphical user interface to configure all constant
@@ -43,8 +45,16 @@ public class ParametersModule extends AbstractModule {
     if (0 < TensorProperties.wrap(object).fields().count()) {
       ParametersComponent propertiesComponent = new ParametersComponent(object);
       String title = object.getClass().getSimpleName();
-      title = title.endsWith("Config") ? title.substring(0, title.length() - 6) : title;
+      title = title.endsWith("Config") //
+          ? title.substring(0, title.length() - 6)
+          : title;
       jTabbedPane.addTab(title, propertiesComponent.getScrollPane());
+      {
+        // change tab component to modify display size
+        int count = jTabbedPane.getTabCount() - 1;
+        JLabel jLabel = GuiConfig.GLOBAL.createSubLabel(title);
+        jTabbedPane.setTabComponentAt(count, jLabel);
+      }
     }
   }
 

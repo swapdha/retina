@@ -7,25 +7,24 @@ import java.awt.Graphics2D;
 import java.util.Objects;
 
 import ch.ethz.idsc.gokart.core.pos.GokartPoseInterface;
+import ch.ethz.idsc.gokart.dev.rimo.RimoGetEvent;
+import ch.ethz.idsc.gokart.dev.rimo.RimoGetListener;
 import ch.ethz.idsc.owl.gui.RenderInterface;
 import ch.ethz.idsc.owl.gui.win.GeometricLayer;
-import ch.ethz.idsc.retina.dev.joystick.GokartJoystickInterface;
-import ch.ethz.idsc.retina.dev.joystick.JoystickEvent;
-import ch.ethz.idsc.retina.dev.joystick.JoystickListener;
-import ch.ethz.idsc.retina.dev.rimo.RimoGetEvent;
-import ch.ethz.idsc.retina.dev.rimo.RimoGetListener;
+import ch.ethz.idsc.retina.joystick.ManualControlInterface;
+import ch.ethz.idsc.retina.joystick.ManualControlListener;
 import ch.ethz.idsc.tensor.Scalar;
 import ch.ethz.idsc.tensor.sca.Round;
 
 /** head up display for velocity and angular rate */
-class GokartHudRender implements RenderInterface, RimoGetListener, JoystickListener {
+class GokartHudRender implements RenderInterface, RimoGetListener, ManualControlListener {
   private static final Font FONT_SMALL = new Font(Font.DIALOG, Font.PLAIN, 12);
   private static final Font FONT_LARGE = new Font(Font.DIALOG, Font.BOLD, 25);
   private static final int SEPX = 200;
   // ---
   private final GokartPoseInterface gokartPoseInterface;
   private RimoGetEvent rimoGetEvent;
-  private JoystickEvent joystickEvent;
+  private ManualControlInterface manualControlInterface;
 
   public GokartHudRender(GokartPoseInterface gokartPoseInterface) {
     this.gokartPoseInterface = gokartPoseInterface;
@@ -49,12 +48,11 @@ class GokartHudRender implements RenderInterface, RimoGetListener, JoystickListe
       graphics.drawString(gokartPoseInterface.getPose().map(Round._2).toString(), SEPX, 12);
     }
     {
-      if (Objects.nonNull(joystickEvent)) {
-        GokartJoystickInterface gokartJoystickInterface = (GokartJoystickInterface) joystickEvent;
+      if (Objects.nonNull(manualControlInterface)) {
         graphics.setFont(FONT_LARGE);
         graphics.setColor(Color.BLUE);
         graphics.drawString("Autonomous", 0, 40 + 60);
-        boolean isAutonomousPressed = gokartJoystickInterface.isAutonomousPressed();
+        boolean isAutonomousPressed = manualControlInterface.isAutonomousPressed();
         graphics.setColor(isAutonomousPressed ? Color.RED : Color.BLUE);
         graphics.drawString("" + isAutonomousPressed, SEPX, 40 + 60);
       }
@@ -66,8 +64,8 @@ class GokartHudRender implements RenderInterface, RimoGetListener, JoystickListe
     this.rimoGetEvent = getEvent;
   }
 
-  @Override
-  public void joystick(JoystickEvent joystickEvent) {
-    this.joystickEvent = joystickEvent;
+  @Override // from ManualControlListener
+  public void manualControl(ManualControlInterface manualControlInterface) {
+    this.manualControlInterface = manualControlInterface;
   }
 }

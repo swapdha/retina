@@ -9,20 +9,20 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import ch.ethz.idsc.gokart.core.pos.GokartPoseEvent;
+import ch.ethz.idsc.gokart.dev.rimo.RimoGetEvent;
+import ch.ethz.idsc.gokart.dev.steer.SteerColumnInterface;
+import ch.ethz.idsc.gokart.dev.steer.SteerPutEvent;
 import ch.ethz.idsc.gokart.gui.GokartLcmChannel;
 import ch.ethz.idsc.gokart.gui.GokartStatusEvent;
 import ch.ethz.idsc.gokart.gui.top.SensorsConfig;
+import ch.ethz.idsc.gokart.lcm.OfflineLogListener;
+import ch.ethz.idsc.gokart.lcm.OfflineLogPlayer;
 import ch.ethz.idsc.gokart.lcm.autobox.RimoLcmServer;
-import ch.ethz.idsc.retina.dev.davis.data.DavisImuFrame;
-import ch.ethz.idsc.retina.dev.joystick.GokartJoystickInterface;
-import ch.ethz.idsc.retina.dev.joystick.JoystickDecoder;
-import ch.ethz.idsc.retina.dev.joystick.JoystickEvent;
-import ch.ethz.idsc.retina.dev.rimo.RimoGetEvent;
-import ch.ethz.idsc.retina.dev.steer.SteerColumnInterface;
-import ch.ethz.idsc.retina.dev.steer.SteerPutEvent;
-import ch.ethz.idsc.retina.lcm.OfflineLogListener;
-import ch.ethz.idsc.retina.lcm.OfflineLogPlayer;
-import ch.ethz.idsc.retina.lcm.davis.DavisImuFramePublisher;
+import ch.ethz.idsc.gokart.lcm.davis.DavisImuFramePublisher;
+import ch.ethz.idsc.retina.davis.data.DavisImuFrame;
+import ch.ethz.idsc.retina.joystick.JoystickDecoder;
+import ch.ethz.idsc.retina.joystick.JoystickEvent;
+import ch.ethz.idsc.retina.joystick.ManualControlInterface;
 import ch.ethz.idsc.retina.util.math.Magnitude;
 import ch.ethz.idsc.retina.util.math.SI;
 import ch.ethz.idsc.tensor.RealScalar;
@@ -94,8 +94,8 @@ public class GokartLogFileIndexer implements OfflineLogListener {
     } else //
     if (channel.equals(GokartLcmChannel.JOYSTICK)) {
       JoystickEvent joystickEvent = JoystickDecoder.decode(byteBuffer);
-      GokartJoystickInterface gji = (GokartJoystickInterface) joystickEvent;
-      auton = Boole.of(gji.isAutonomousPressed());
+      ManualControlInterface manualControlInterface = (ManualControlInterface) joystickEvent;
+      auton = Boole.of(manualControlInterface.isAutonomousPressed());
     } else //
     if (channel.equals(GokartLcmChannel.STATUS)) {
       SteerColumnInterface steerColumnInterface = new GokartStatusEvent(byteBuffer);

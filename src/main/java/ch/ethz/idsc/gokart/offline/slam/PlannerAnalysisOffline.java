@@ -19,22 +19,22 @@ import ch.ethz.idsc.gokart.core.slam.PredefinedMap;
 import ch.ethz.idsc.gokart.gui.GokartLcmChannel;
 import ch.ethz.idsc.gokart.gui.top.GokartRender;
 import ch.ethz.idsc.gokart.gui.top.TrajectoryRender;
+import ch.ethz.idsc.gokart.lcm.ArrayFloatBlob;
+import ch.ethz.idsc.gokart.lcm.OfflineLogListener;
 import ch.ethz.idsc.gokart.lcm.mod.PlannerPublish;
-import ch.ethz.idsc.owl.bot.util.UserHome;
 import ch.ethz.idsc.owl.car.core.VehicleModel;
 import ch.ethz.idsc.owl.car.shop.RimoSinusIonModel;
 import ch.ethz.idsc.owl.gui.RenderInterface;
-import ch.ethz.idsc.owl.gui.ren.Se2WaypointRender;
+import ch.ethz.idsc.owl.gui.ren.WaypointRender;
 import ch.ethz.idsc.owl.gui.win.GeometricLayer;
-import ch.ethz.idsc.owl.math.planar.Arrowhead;
-import ch.ethz.idsc.retina.lcm.ArrayFloatBlob;
-import ch.ethz.idsc.retina.lcm.OfflineLogListener;
 import ch.ethz.idsc.retina.util.math.Magnitude;
 import ch.ethz.idsc.retina.util.math.SI;
+import ch.ethz.idsc.sophus.planar.Arrowhead;
 import ch.ethz.idsc.tensor.Scalar;
 import ch.ethz.idsc.tensor.Scalars;
 import ch.ethz.idsc.tensor.Tensor;
 import ch.ethz.idsc.tensor.Tensors;
+import ch.ethz.idsc.tensor.io.HomeDirectory;
 import ch.ethz.idsc.tensor.io.ResourceData;
 import ch.ethz.idsc.tensor.qty.Quantity;
 import ch.ethz.idsc.tensor.sca.Round;
@@ -44,7 +44,7 @@ public class PlannerAnalysisOffline implements OfflineLogListener {
   // ---
   private final Tensor waypoints = ResourceData.of("/dubilab/waypoints/20180425.csv");
   private final RenderInterface renderInterface = //
-      new Se2WaypointRender(waypoints, Arrowhead.of(0.9), new Color(64, 192, 64, 255));
+      new WaypointRender(Arrowhead.of(0.9), new Color(64, 192, 64, 255)).setWaypoints(waypoints);
   private final TrajectoryRender trajectoryRender = new TrajectoryRender();
   private final GokartPoseOdometry gokartPoseOdometry = GokartPoseLcmServer.INSTANCE.getGokartPoseOdometry();
   private final MappedPoseInterface gokartPoseInterface = gokartPoseOdometry;
@@ -80,7 +80,7 @@ public class PlannerAnalysisOffline implements OfflineLogListener {
       // ---
       try {
         // TODO different filename
-        ImageIO.write(image, "png", UserHome.Pictures("/log/" + Magnitude.SECOND.apply(time).toString() + ".png"));
+        ImageIO.write(image, "png", HomeDirectory.Pictures("log", Magnitude.SECOND.apply(time).toString() + ".png"));
       } catch (IOException e) {
         e.printStackTrace();
       }

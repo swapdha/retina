@@ -7,13 +7,14 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.WindowConstants;
 
+import ch.ethz.idsc.gokart.core.map.GokartTrackReconModule;
+import ch.ethz.idsc.gokart.core.pos.GokartPoseLcmClient;
 import ch.ethz.idsc.gokart.core.pos.LocalizationConfig;
 import ch.ethz.idsc.gokart.core.pos.MappedPoseInterface;
-import ch.ethz.idsc.gokart.core.pure.DubendorfCurve;
-import ch.ethz.idsc.gokart.core.pure.TrajectoryConfig;
 import ch.ethz.idsc.gokart.core.pure.TrajectoryLcmClient;
 import ch.ethz.idsc.gokart.core.slam.PredefinedMap;
 import ch.ethz.idsc.gokart.gui.GokartLcmChannel;
@@ -21,19 +22,22 @@ import ch.ethz.idsc.gokart.lcm.autobox.GokartStatusLcmClient;
 import ch.ethz.idsc.gokart.lcm.autobox.LinmotGetLcmClient;
 import ch.ethz.idsc.gokart.lcm.autobox.RimoGetLcmClient;
 import ch.ethz.idsc.gokart.lcm.autobox.RimoPutLcmClient;
+import ch.ethz.idsc.gokart.lcm.davis.DavisImuLcmClient;
+import ch.ethz.idsc.gokart.lcm.lidar.Vlp16LcmHandler;
 import ch.ethz.idsc.owl.car.core.VehicleModel;
 import ch.ethz.idsc.owl.car.shop.RimoSinusIonModel;
 import ch.ethz.idsc.owl.gui.RenderInterface;
-import ch.ethz.idsc.owl.gui.ren.Se2WaypointRender;
-import ch.ethz.idsc.owl.math.planar.Arrowhead;
-import ch.ethz.idsc.retina.dev.lidar.LidarAngularFiringCollector;
-import ch.ethz.idsc.retina.dev.lidar.LidarRotationProvider;
-import ch.ethz.idsc.retina.dev.lidar.LidarSpacialProvider;
-import ch.ethz.idsc.retina.lcm.davis.DavisImuLcmClient;
-import ch.ethz.idsc.retina.lcm.lidar.Vlp16LcmHandler;
-import ch.ethz.idsc.retina.sys.AbstractModule;
-import ch.ethz.idsc.retina.sys.AppCustomization;
-import ch.ethz.idsc.retina.util.gui.WindowConfiguration;
+import ch.ethz.idsc.owl.gui.ren.GridRender;
+import ch.ethz.idsc.owl.gui.ren.WaypointRender;
+import ch.ethz.idsc.retina.lidar.LidarAngularFiringCollector;
+import ch.ethz.idsc.retina.lidar.LidarRotationProvider;
+import ch.ethz.idsc.retina.lidar.LidarSpacialProvider;
+import ch.ethz.idsc.retina.util.sys.AbstractModule;
+import ch.ethz.idsc.retina.util.sys.AppCustomization;
+import ch.ethz.idsc.retina.util.sys.ModuleAuto;
+import ch.ethz.idsc.retina.util.sys.WindowConfiguration;
+import ch.ethz.idsc.sophus.app.api.PathRender;
+import ch.ethz.idsc.sophus.planar.Arrowhead;
 import ch.ethz.idsc.tensor.Tensor;
 import ch.ethz.idsc.tensor.io.ResourceData;
 
@@ -53,14 +57,30 @@ abstract class ViewLcmModule extends AbstractModule {
   private final LinmotGetLcmClient linmotGetLcmClient = new LinmotGetLcmClient();
   private final GokartStatusLcmClient gokartStatusLcmClient = new GokartStatusLcmClient();
   private final List<TrajectoryLcmClient> trajectoryLcmClients = Arrays.asList( //
-      TrajectoryLcmClient.xyat(), TrajectoryLcmClient.xyavt());
+      TrajectoryLcmClient.xyat(), //
+      TrajectoryLcmClient.xyavt());
   private final WindowConfiguration windowConfiguration = //
       AppCustomization.load(getClass(), new WindowConfiguration());
+  private final PathRender pathRender = new PathRender(Color.YELLOW);
+  private final WaypointRender waypointRender = new WaypointRender(Arrowhead.of(0.9), new Color(64, 192, 64, 255));
+  private final GokartPoseLcmClient gokartPoseLcmClient = new GokartPoseLcmClient();
+  private final PoseTrailRender poseTrailRender = new PoseTrailRender();
+  // ---
   private MappedPoseInterface mappedPoseInterface;
 
   protected void setGokartPoseInterface(MappedPoseInterface mappedPoseInterface) {
     this.mappedPoseInterface = mappedPoseInterface;
     viewLcmFrame.setGokartPoseInterface(mappedPoseInterface);
+  }
+
+  /** @param curve may be null */
+  public void setCurve(Tensor curve) {
+    pathRender.setCurve(curve, true);
+  }
+
+  /** @param waypoints may be null */
+  public void setWaypoints(Tensor waypoints) {
+    waypointRender.setWaypoints(waypoints);
   }
 
   @Override // from AbstractModule
@@ -73,14 +93,13 @@ abstract class ViewLcmModule extends AbstractModule {
       viewLcmFrame.geometricComponent.addRenderInterface(renderInterface);
     }
     {
-      final Tensor waypoints = TrajectoryConfig.getWaypoints();
-      RenderInterface waypointRender = new Se2WaypointRender(waypoints, Arrowhead.of(0.9), new Color(64, 192, 64, 255));
+      viewLcmFrame.geometricComponent.addRenderInterface(pathRender);
       viewLcmFrame.geometricComponent.addRenderInterface(waypointRender);
     }
     {
-      PathRender pathRender = new PathRender(mappedPoseInterface);
-      gokartStatusLcmClient.addListener(pathRender.gokartStatusListener);
-      viewLcmFrame.geometricComponent.addRenderInterface(pathRender);
+      GokartPathRender gokartPathRender = new GokartPathRender(mappedPoseInterface);
+      gokartStatusLcmClient.addListener(gokartPathRender.gokartStatusListener);
+      viewLcmFrame.geometricComponent.addRenderInterface(gokartPathRender);
     }
     // ---
     {
@@ -96,7 +115,6 @@ abstract class ViewLcmModule extends AbstractModule {
       resampledLidarRender.setReference(() -> SensorsConfig.GLOBAL.vlp16);
       resampledLidarRender.setColor(new Color(255, 0, 128, 128));
       LidarAngularFiringCollector lidarAngularFiringCollector = new LidarAngularFiringCollector(2304, 2);
-      // LidarSpacialProvider lidarSpacialProvider = SensorsConfig.GLOBAL.planarEmulatorVlp16_p01deg();
       LidarSpacialProvider lidarSpacialProvider = LocalizationConfig.GLOBAL.planarEmulatorVlp16();
       lidarSpacialProvider.addListener(lidarAngularFiringCollector);
       LidarRotationProvider lidarRotationProvider = new LidarRotationProvider();
@@ -107,11 +125,14 @@ abstract class ViewLcmModule extends AbstractModule {
       vlp16LcmHandler.velodyneDecoder.addRayListener(lidarRotationProvider);
       viewLcmFrame.geometricComponent.addRenderInterface(resampledLidarRender);
     }
-    { // TODO not generic
-      Tensor curve = DubendorfCurve.HYPERLOOP_EIGHT_REVERSE;
-      // curve = CROP_REGION;
-      CurveRender curveRender = new CurveRender(curve);
-      viewLcmFrame.geometricComponent.addRenderInterface(curveRender);
+    {
+      GokartTrackReconModule gokartTrackReconModule = //
+          ModuleAuto.INSTANCE.getInstance(GokartTrackReconModule.class);
+      if (Objects.nonNull(gokartTrackReconModule))
+        viewLcmFrame.geometricComponent.addRenderInterface(gokartTrackReconModule);
+    }
+    {
+      viewLcmFrame.geometricComponent.addRenderInterface(MPCPredictionRender.INSTANCE);
     }
     {
       TrajectoryRender trajectoryRender = new TrajectoryRender();
@@ -127,6 +148,10 @@ abstract class ViewLcmModule extends AbstractModule {
       viewLcmFrame.geometricComponent.addRenderInterface(gokartRender);
     }
     viewLcmFrame.geometricComponent.addRenderInterface(GridRender.INSTANCE);
+    {
+      gokartPoseLcmClient.addListener(poseTrailRender);
+      viewLcmFrame.geometricComponent.addRenderInterface(poseTrailRender);
+    }
     // ---
     rimoGetLcmClient.startSubscriptions();
     rimoPutLcmClient.startSubscriptions();
@@ -135,8 +160,7 @@ abstract class ViewLcmModule extends AbstractModule {
     vlp16LcmHandler.startSubscriptions();
     davisImuLcmClient.startSubscriptions();
     trajectoryLcmClients.forEach(TrajectoryLcmClient::startSubscriptions);
-    // ---
-    // odometryLcmClient.startSubscriptions();
+    gokartPoseLcmClient.startSubscriptions();
     // ---
     windowConfiguration.attach(getClass(), viewLcmFrame.jFrame);
     viewLcmFrame.configCoordinateOffset(400, 500);
@@ -161,11 +185,10 @@ abstract class ViewLcmModule extends AbstractModule {
     linmotGetLcmClient.stopSubscriptions();
     gokartStatusLcmClient.stopSubscriptions();
     // ---
-    // odometryLcmClient.stopSubscriptions();
-    // ---
     vlp16LcmHandler.stopSubscriptions();
     davisImuLcmClient.stopSubscriptions();
     trajectoryLcmClients.forEach(TrajectoryLcmClient::stopSubscriptions);
+    gokartPoseLcmClient.stopSubscriptions();
     // ---
     viewLcmFrame.close();
   }

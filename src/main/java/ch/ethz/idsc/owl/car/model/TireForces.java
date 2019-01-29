@@ -4,9 +4,7 @@ package ch.ethz.idsc.owl.car.model;
 
 import ch.ethz.idsc.owl.car.core.VehicleModel;
 import ch.ethz.idsc.owl.car.math.RobustSlip;
-import ch.ethz.idsc.owl.math.FrictionCoefficients;
-import ch.ethz.idsc.owl.math.PhysicalConstants;
-import ch.ethz.idsc.owl.math.planar.Cross2D;
+import ch.ethz.idsc.sophus.planar.Cross2D;
 import ch.ethz.idsc.tensor.RealScalar;
 import ch.ethz.idsc.tensor.Scalar;
 import ch.ethz.idsc.tensor.Tensor;
@@ -34,7 +32,7 @@ public class TireForces {
   /** @param vehicleModel
    * @param carState
    * @param carControl
-   * @param mu friction coefficient of tire on road/ground, see {@link FrictionCoefficients} */
+   * @param mu friction coefficient of tire on road/ground, see FrictionCoefficients */
   public TireForces(VehicleModel vehicleModel, CarState carState, CarControl carControl, Scalar mu) {
     this.vehicleModel = vehicleModel;
     this.carState = carState;

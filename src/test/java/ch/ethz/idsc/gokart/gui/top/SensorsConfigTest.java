@@ -4,14 +4,14 @@ package ch.ethz.idsc.gokart.gui.top;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import ch.ethz.idsc.retina.dev.davis.data.DavisImuFrame;
+import ch.ethz.idsc.retina.davis.data.DavisImuFrame;
 import ch.ethz.idsc.retina.util.math.SI;
 import ch.ethz.idsc.tensor.RealScalar;
 import ch.ethz.idsc.tensor.Scalar;
 import ch.ethz.idsc.tensor.Scalars;
 import ch.ethz.idsc.tensor.alg.VectorQ;
 import ch.ethz.idsc.tensor.qty.Quantity;
-import ch.ethz.idsc.tensor.sca.Chop;
+import ch.ethz.idsc.tensor.sca.Clip;
 import ch.ethz.idsc.tensor.sca.Sign;
 import junit.framework.TestCase;
 
@@ -51,6 +51,9 @@ public class SensorsConfigTest extends TestCase {
     byteBuffer.flip();
     DavisImuFrame davisImuFrame = new DavisImuFrame(byteBuffer);
     Scalar gyroZ = SensorsConfig.GLOBAL.getGyroZ(davisImuFrame);
-    assertTrue(Chop._07.close(gyroZ, Quantity.of(-0.5435834616898371, SI.PER_SECOND)));
+    Clip clip = Clip.function( //
+        Quantity.of(-0.56, SI.PER_SECOND), //
+        Quantity.of(-0.50, SI.PER_SECOND));
+    clip.requireInside(gyroZ);
   }
 }

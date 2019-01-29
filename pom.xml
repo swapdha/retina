@@ -83,24 +83,29 @@
 		<dependency>
 			<groupId>ch.ethz.idsc</groupId>
 			<artifactId>tensor</artifactId>
-			<version>0.6.1</version>
+			<version>0.6.8</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.ethz.idsc</groupId>
 			<artifactId>ephemeral</artifactId>
-			<version>0.1.0</version>
+			<version>0.1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.ethz.idsc</groupId>
 			<artifactId>lcm-java</artifactId>
-			<version>0.0.9</version>
+			<version>0.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.ethz.idsc</groupId>
 			<artifactId>owl</artifactId>
-			<version>0.2.1</version>
+			<version>0.2.9</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.fazecast</groupId>
+			<artifactId>jSerialComm</artifactId>
+			<version>2.4.0</version>
+		</dependency>
 		<dependency>
 			<groupId>de.lmu.ifi.dbs.elki</groupId>
 			<artifactId>elki-bundle</artifactId>

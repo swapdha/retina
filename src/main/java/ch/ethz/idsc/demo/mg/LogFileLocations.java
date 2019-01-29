@@ -3,9 +3,10 @@ package ch.ethz.idsc.demo.mg;
 
 import java.io.File;
 
-import ch.ethz.idsc.owl.bot.util.UserHome;
 import ch.ethz.idsc.tensor.Tensor;
+import ch.ethz.idsc.tensor.io.HomeDirectory;
 import ch.ethz.idsc.tensor.io.ResourceData;
+import ch.ethz.idsc.tensor.io.UserName;
 
 public enum LogFileLocations {
   /** extracted part of DUBI4 log file */
@@ -179,6 +180,8 @@ public enum LogFileLocations {
   DUBI19test("20180924T104243_820c1ac4.lcm.00"),
   /** driving around faster with odometry SLAM */
   DUBI19test2("20180924T110653_820c1ac4.lcm.00"),
+  /** dubi20 is the new calibration */
+  DUBI20a("20180924T110653_820c1ac4.lcm.00"),
   /** testing SiliconEye sensor first time, partially with markings */
   DUBISiliconEye("20181003T155915_f6edefe8.lcm.00"), //
   DUBISiliconEyeA("20181003T155915_f6edefe8Extracted1.lcm"), //
@@ -202,12 +205,12 @@ public enum LogFileLocations {
 
   public File getFile() {
     final File root;
-    switch (UserHome.file("").getName()) {
+    switch (UserName.get()) {
     case "datahaki":
       root = new File("/media/datahaki/media/ethz/gokart/topic/davis_extracted_logs");
       break;
     default:
-      root = UserHome.file("logs");
+      root = HomeDirectory.file("logs");
       break;
     }
     File file = new File(root, filename);
